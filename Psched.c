@@ -1,7 +1,7 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <ctype.h>
-// What if a comment is within a string quotation
 
-int main(void) {
+int main(int argc, char *argv[]) {
 
 }
