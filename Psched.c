@@ -6,8 +6,67 @@ void merge(int a[], int first, int splitter, int last);
 void mergeSort(int a[], int first, int last);
 void printArray(int A[], int size);
 
-int main(int argc, char *argv[]) {
-  // Process the arguments, use isalpha() and isdigit()
+int main(int argc, char *argv[]){
+  // Process the arguments
+  int i, integerArgument, processors, tasks, flagged; // flagged is a state of whether or not we've reached a flag argument yet.
+  int temp[argc];
+  flagged = tasks = 0;
+
+  for (i = 1; i < argc; i++){
+    printf("The %dth arguments are %s\n", i, argv[i]);
+    integerArgument = atoi(argv[i]);
+    // If the first argument is a positive int (as it should be) we assign it to processors
+    if (integerArgument > 0 && i == 1)
+      processors = integerArgument;
+    // If the first argument is not a positive int, we throw an error
+    else if (i == 1){
+      printf("Enter a valid processor number \n");
+      return 1;
+    }
+    // Throw error if any arguments are negative
+    else if (integerArgument < 0){
+      printf("None of the arguments should be negative \n");
+      return 1;
+    }
+    // If we have a positive int and it's not the first element or after an existing flag argument, we add to our list of tasks
+    else if (integerArgument > 0 && !flagged){
+      temp[i - 2] = integerArgument;
+      tasks ++;
+    }
+    // If argument is 0, we need to distinguish between the int and the flags
+    else if (integerArgument == 0){
+      if (!strcmp(argv[i], "0") && !flagged)
+        printf("Zero argument\n");
+      // If it's a string, process for flags
+      else if (strcmp(argv[i], "0")){
+        if (!strcmp(argv[i], "-opt")){
+          flagged = 1;
+          printf("Backtracking\n");
+        }
+        else if (!strcmp(argv[i], "-lw")){
+          flagged = 1;
+          printf("Least-workload\n");
+        }
+        else if (!strcmp(argv[i], "-lwd")){
+          flagged = 1;
+          printf("Sort and then Least-workload\n");
+        }
+        else if (!strcmp(argv[i], "-bw")){
+          flagged = 1;
+          printf("Best-workload\n");
+        }
+        else if (!strcmp(argv[i], "-bwd")){
+          flagged = 1;
+          printf("Sort and then Best-workload\n")
+        }
+        else {
+          printf("Flag not recognized\n");
+          return 1;
+        }
+      }
+    }
+    printf("Converts to %d\n", integerArgument);
+  }
 
   // -opt means use backtracking
   // -lw means use least-workload heuristic. Assign tasks in the order they appear on the command line, and assign each to a processor that has the least workload at the time of the assignment.
