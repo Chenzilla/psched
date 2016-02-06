@@ -5,19 +5,22 @@
 void merge(int a[], int first, int splitter, int last);
 void mergeSort(int a[], int first, int last);
 void printArray(int A[], int size);
+int lw(int processors, int tasks, int taskA[]);
 
 int main(int argc, char *argv[]){
   // Process the arguments
-  int i, integerArgument, processors, tasks, flagged; // flagged is a state of whether or not we've reached a flag argument yet.
+  int i, j, integerArgument, processors, tasks, flagged, temporaryMax; // flagged is a state of whether or not we've reached a flag argument yet.
   int temp[argc];
   flagged = tasks = 0;
+  processors = atoi(argv[1]);
 
   for (i = 1; i < argc; i++){
     printf("The %dth arguments are %s\n", i, argv[i]);
     integerArgument = atoi(argv[i]);
     // If the first argument is a positive int (as it should be) we assign it to processors
-    if (integerArgument > 0 && i == 1)
-      processors = integerArgument;
+    if (integerArgument > 0 && i == 1){
+      printf("There are %d processors\n", processors);
+    }
     // If the first argument is not a positive int, we throw an error
     else if (i == 1){
       printf("Enter a valid processor number \n");
@@ -35,8 +38,11 @@ int main(int argc, char *argv[]){
     }
     // If argument is 0, we need to distinguish between the int and the flags
     else if (integerArgument == 0){
-      if (!strcmp(argv[i], "0") && !flagged)
+      if (!strcmp(argv[i], "0") && !flagged){
+        temp[i - 2] = integerArgument;
+        tasks ++;
         printf("Zero argument\n");
+      }
       // If it's a string, process for flags
       else if (strcmp(argv[i], "0")){
         if (!strcmp(argv[i], "-opt")){
@@ -46,6 +52,8 @@ int main(int argc, char *argv[]){
         else if (!strcmp(argv[i], "-lw")){
           flagged = 1;
           printf("Least-workload\n");
+          temporaryMax = lw(processors, tasks, temp);
+          printf("-lw  %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-lwd")){
           flagged = 1;
@@ -57,7 +65,7 @@ int main(int argc, char *argv[]){
         }
         else if (!strcmp(argv[i], "-bwd")){
           flagged = 1;
-          printf("Sort and then Best-workload\n")
+          printf("Sort and then Best-workload\n");
         }
         else {
           printf("Flag not recognized\n");
@@ -147,13 +155,35 @@ void mergeSort(int a[], int first, int last){
 }
 
 // Least Workload Function
-// int[] lw(int processors, int workloads[]) {
+int lw(int processors, int tasks, int taskA[]) {
 //   Make an array with elements = # of processors
+  int processorA[processors];
+  int i, j, k, lowestProcessor, lowestProcessorIndex, currentTask, currentProcessor;
+  for (i = 0; i < processors; i++)
+    processorA[i] = 0;
 //   For each task in the workload array:
 //      Go through the processor array, keeping track of which index has the lowest overall workload
 //      Add the task to the index with the lowest value
-//   Sort the processor array and return the largest workload
-// }
+  for (j = 0; j < tasks; j++){
+    currentTask = taskA[j];
+    for (k = 0; k < processors; k++){
+      currentProcessor = processorA[k];
+      if (!j){
+        lowestProcessor = currentTask;
+        lowestProcessorIndex = j;
+      }
+      else if (processorA[k] < lowestProcessor){
+        lowestProcessor = processorA[k];
+        lowestProcessorIndex = k;
+      }
+    }
+    processorA[lowestProcessorIndex] += currentTask;
+    lowestProcessor = processorA[lowestProcessorIndex];
+  }
+  //   Sort the processor array and return the largest (last) processor value
+  mergeSort(processorA, 0, processors-1);
+  return processorA[processors - 1];
+}
 
 // Best Workload Function
 // int[] bw(int processors, int workloads[]) {
