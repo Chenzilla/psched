@@ -6,11 +6,12 @@ void merge(int a[], int first, int splitter, int last);
 void mergeSort(int a[], int first, int last);
 void printArray(int A[], int size);
 int lw(int processors, int tasks, int taskA[]);
+void reverseArray(int A[], int size);
 
 int main(int argc, char *argv[]){
   // Process the arguments
   int i, j, integerArgument, processors, tasks, flagged, temporaryMax; // flagged is a state of whether or not we've reached a flag argument yet.
-  int temp[argc];
+  int taskA[argc], sortedTaskA[argc];
   flagged = tasks = 0;
   processors = atoi(argv[1]);
 
@@ -33,13 +34,15 @@ int main(int argc, char *argv[]){
     }
     // If we have a positive int and it's not the first element or after an existing flag argument, we add to our list of tasks
     else if (integerArgument > 0 && !flagged){
-      temp[i - 2] = integerArgument;
+      taskA[i - 2] = integerArgument;
+      sortedTaskA[i - 2] = integerArgument;
       tasks ++;
     }
     // If argument is 0, we need to distinguish between the int and the flags
     else if (integerArgument == 0){
       if (!strcmp(argv[i], "0") && !flagged){
-        temp[i - 2] = integerArgument;
+        taskA[i - 2] = integerArgument;
+        sortedTaskA[i - 2] = integerArgument;
         tasks ++;
         printf("Zero argument\n");
       }
@@ -52,12 +55,17 @@ int main(int argc, char *argv[]){
         else if (!strcmp(argv[i], "-lw")){
           flagged = 1;
           printf("Least-workload\n");
-          temporaryMax = lw(processors, tasks, temp);
+          printArray(taskA, tasks);
+          temporaryMax = lw(processors, tasks, taskA);
           printf("-lw  %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-lwd")){
           flagged = 1;
           printf("Sort and then Least-workload\n");
+          mergeSort(sortedTaskA, 0, tasks - 1);
+          reverseArray(sortedTaskA, tasks);
+          temporaryMax = lw(processors, tasks, sortedTaskA);
+          printf("-lwd %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-bw")){
           flagged = 1;
@@ -73,7 +81,6 @@ int main(int argc, char *argv[]){
         }
       }
     }
-    printf("Converts to %d\n", integerArgument);
   }
 
   // -opt means use backtracking
@@ -88,16 +95,16 @@ int main(int argc, char *argv[]){
 
   // Call printf("-FFF %d\n", maxWorkLoad); where FFF is current flag blank-padded to three characters. When multiple flags, print in order that they are specified on command line. Flags may be specified multiple times.
 
-  int arr[] = {12, 11, 13, 5, 6, 2, 1, 2, 7};
-  int arr_size = sizeof(arr)/sizeof(arr[0]);
+  // int arr[] = {12, 11, 13, 5, 6, 2, 1, 2, 7};
+  // int arr_size = sizeof(arr)/sizeof(arr[0]);
 
-  printf("Given array is \n");
-  printArray(arr, arr_size);
+  // printf("Given array is \n");
+  // printArray(arr, arr_size);
 
-  mergeSort(arr, 0, arr_size - 1);
+  // mergeSort(arr, 0, arr_size - 1);
 
-  printf("\nSorted array is \n");
-  printArray(arr, arr_size);
+  // printf("\nSorted array is \n");
+  // printArray(arr, arr_size);
   return 0;
 }
 
@@ -229,10 +236,19 @@ int lw(int processors, int tasks, int taskA[]) {
 
 // Utility Functions
 // Function to print an array
-void printArray(int A[], int size)
-{
+void printArray(int A[], int size){
   int i;
-  for (i=0; i < size; i++)
+  for (i = 0; i < size; i++)
     printf("%d ", A[i]);
   printf("\n");
+}
+
+void reverseArray(int A[], int size){
+  int i, j;
+  int tempA[size];
+  for (j = 0; j < size; j++)
+    tempA[j] = A[j];
+  for (i = 0; i < size; i++){
+    A[i] = tempA[size - i - 1];
+  }
 }
