@@ -15,15 +15,12 @@ int main(int argc, char *argv[]){
   int i, j, integerArgument, processors, tasks, flagged, temporaryMax; // flagged is a state of whether or not we've reached a flag argument yet.
   int taskA[argc], sortedTaskA[argc];
   flagged = tasks = 0;
-  processors = atoi(argv[1]);
 
   for (i = 1; i < argc; i++){
-    printf("The %dth arguments are %s\n", i, argv[i]);
     integerArgument = atoi(argv[i]);
     // If the first argument is a positive int (as it should be) we assign it to processors
-    if (integerArgument > 0 && i == 1){
-      printf("There are %d processors\n", processors);
-    }
+    if (integerArgument > 0 && i == 1)
+      processors = atoi(argv[1]);
     // If the first argument is not a positive int, we throw an error
     else if (i == 1){
       printf("Enter a valid processor number \n");
@@ -46,7 +43,6 @@ int main(int argc, char *argv[]){
         taskA[i - 2] = integerArgument;
         sortedTaskA[i - 2] = integerArgument;
         tasks ++;
-        printf("Zero argument\n");
       }
       // If it's a string, process for flags
       else if (strcmp(argv[i], "0")){
@@ -56,14 +52,11 @@ int main(int argc, char *argv[]){
         }
         else if (!strcmp(argv[i], "-lw")){
           flagged = 1;
-          printf("Least-workload\n");
-          printArray(taskA, tasks);
           temporaryMax = lw(processors, tasks, taskA);
           printf("-lw  %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-lwd")){
           flagged = 1;
-          printf("Sort and then Least-workload\n");
           mergeSort(sortedTaskA, 0, tasks - 1);
           reverseArray(sortedTaskA, tasks);
           temporaryMax = lw(processors, tasks, sortedTaskA);
@@ -71,13 +64,15 @@ int main(int argc, char *argv[]){
         }
         else if (!strcmp(argv[i], "-bw")){
           flagged = 1;
-          printf("Best-workload\n");
           temporaryMax = bw(processors, tasks, taskA);
           printf("-bw  %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-bwd")){
           flagged = 1;
-          printf("Sort and then Best-workload\n");
+          mergeSort(sortedTaskA, 0, tasks - 1);
+          reverseArray(sortedTaskA, tasks);
+          temporaryMax = bw(processors, tasks, sortedTaskA);
+          printf("-bwd %d\n", temporaryMax);
         }
         else {
           printf("Flag not recognized\n");
@@ -215,24 +210,19 @@ int lw(int processors, int tasks, int taskA[]) {
         lowestProcessorIndex = 0;
       }
       else if (processorA[k] < lowestProcessor){
-        printf("%d is smaller than %d\n", processorA[k], lowestProcessor);
         lowestProcessor = processorA[k];
         lowestProcessorIndex = k;
       }
     }
     lowestProcessor = processorA[lowestProcessorIndex];
-    printf("The lowest processor value is %d at index %d\n", lowestProcessor, lowestProcessorIndex);
 //        Make copy of the processors array with current task time added to each processor time
     for (l = 0; l < processors; l++)
       processorACopy[l] = processorA[l] + currentTask;
 //        Add the task to the copy[index] with the lowest value
 //        If the new max time is > the old max time
-    printf("This is the current processor list is ");
-    printArray(processorA, processors);
     if (maxProcessor < lowestProcessor + currentTask){
       processorA[lowestProcessorIndex] += currentTask;
       lowestProcessor = processorA[lowestProcessorIndex];
-      printf("The max processor would have increased so we added %d to index %d\n", currentTask, lowestProcessorIndex);
     }
 //            Add this task to the actual processor array
 //            Continue
@@ -243,7 +233,6 @@ int lw(int processors, int tasks, int taskA[]) {
       bestProcessorIndex = largestElementLessThan(processorACopy, processors, maxProcessor);
       processorA[bestProcessorIndex] += currentTask;
       lowestProcessor = processorA[bestProcessorIndex];
-      printf("The max processor wouldn't have increased so we added %d to index %d\n", currentTask, bestProcessorIndex);
     }
   }
 //    Sort the processor array and return the largest workload
