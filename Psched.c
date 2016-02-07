@@ -7,6 +7,8 @@ void mergeSort(int a[], int first, int last);
 void printArray(int A[], int size);
 int lw(int processors, int tasks, int taskA[]);
 void reverseArray(int A[], int size);
+int largestElement(int A[], int size);
+int largestElementLessThan(int A[], int size, int compare);
 
 int main(int argc, char *argv[]){
   // Process the arguments
@@ -70,6 +72,8 @@ int main(int argc, char *argv[]){
         else if (!strcmp(argv[i], "-bw")){
           flagged = 1;
           printf("Best-workload\n");
+          temporaryMax = bw(processors, tasks, taskA);
+          printf("-bw  %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-bwd")){
           flagged = 1;
@@ -168,9 +172,9 @@ int lw(int processors, int tasks, int taskA[]) {
   int i, j, k, lowestProcessor, lowestProcessorIndex, currentTask, currentProcessor;
   for (i = 0; i < processors; i++)
     processorA[i] = 0;
-//   For each task in the workload array:
-//      Go through the processor array, keeping track of which index has the lowest overall workload
-//      Add the task to the index with the lowest value
+  //   For each task in the workload array:
+  //      Go through the processor array, keeping track of which index has the lowest overall workload
+  //      Add the task to the index with the lowest value
   for (j = 0; j < tasks; j++){
     currentTask = taskA[j];
     for (k = 0; k < processors; k++){
@@ -193,20 +197,59 @@ int lw(int processors, int tasks, int taskA[]) {
 }
 
 // Best Workload Function
-// int[] bw(int processors, int workloads[]) {
+ int bw(int processors, int tasks, int taskA[]) {
 //    Make an array with elements = # of processors. Also keep track of current max time.
+  int processorA[processors], processorACopy[processors];
+  int i, j, k, l, lowestProcessor, lowestProcessorIndex, bestProcessorIndex, currentTask, currentProcessor, maxProcessor;
+  for (i = 0; i < processors; i++)
+    processorA[i] = 0;
 //    For each task in the workload array:
+  for (j = 0; j < tasks; j++){
 //        Go through the processor array, keeping track of which index has the lowest overall workload
-//        Make copy of the processors array
+    currentTask = taskA[j];
+    maxProcessor = largestElement(processorA, processors);
+    for (k = 0; k < processors; k++){
+      currentProcessor = processorA[k];
+      if (!j){
+        lowestProcessor = currentTask;
+        lowestProcessorIndex = 0;
+      }
+      else if (processorA[k] < lowestProcessor){
+        printf("%d is smaller than %d\n", processorA[k], lowestProcessor);
+        lowestProcessor = processorA[k];
+        lowestProcessorIndex = k;
+      }
+    }
+    lowestProcessor = processorA[lowestProcessorIndex];
+    printf("The lowest processor value is %d at index %d\n", lowestProcessor, lowestProcessorIndex);
+//        Make copy of the processors array with current task time added to each processor time
+    for (l = 0; l < processors; l++)
+      processorACopy[l] = processorA[l] + currentTask;
 //        Add the task to the copy[index] with the lowest value
 //        If the new max time is > the old max time
+    printf("This is the current processor list is ");
+    printArray(processorA, processors);
+    if (maxProcessor < lowestProcessor + currentTask){
+      processorA[lowestProcessorIndex] += currentTask;
+      lowestProcessor = processorA[lowestProcessorIndex];
+      printf("The max processor would have increased so we added %d to index %d\n", currentTask, lowestProcessorIndex);
+    }
 //            Add this task to the actual processor array
 //            Continue
 //        Else
 //            Add the current task to all indices and see which index is the largest value while being <= the previous max time
 //            Add the task to the actual processor array
+    else {
+      bestProcessorIndex = largestElementLessThan(processorACopy, processors, maxProcessor);
+      processorA[bestProcessorIndex] += currentTask;
+      lowestProcessor = processorA[bestProcessorIndex];
+      printf("The max processor wouldn't have increased so we added %d to index %d\n", currentTask, bestProcessorIndex);
+    }
+  }
 //    Sort the processor array and return the largest workload
-//}
+  mergeSort(processorA, 0, processors-1);
+  return processorA[processors - 1];
+}
 
 // Backtracking function
 // int[] opt(int processors, int workloads[]) {
@@ -251,4 +294,26 @@ void reverseArray(int A[], int size){
   for (i = 0; i < size; i++){
     A[i] = tempA[size - i - 1];
   }
+}
+
+int largestElement(int A[], int size){
+  int i, currentMax;
+  currentMax = 0;
+  for (i = 0; i < size; i++){
+    if (A[i] > currentMax)
+      currentMax = A[i];
+  }
+  return currentMax;
+}
+
+int largestElementLessThan(int A[], int size, int compare){
+  int i, currentMax, maxIndex;
+  currentMax = 0;
+  for (i = 0; i < size; i++){
+    if (A[i] > currentMax && A[i] <= compare){
+      currentMax = A[i];
+      maxIndex = i;
+    }
+  }
+  return maxIndex;
 }
