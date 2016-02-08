@@ -261,7 +261,6 @@ int opt(int processors, int tasks, int taskA[]){
   // Compute lower bound on max workload by adding the run-times of the individual tasks and divide by number of processors (round up to nearest int)
   lowerBound = sum/processors + (sum % processors != 0);
   //    Return the resulting minimum workload
-  printArray(taskA, tasks);
   temp = backtrack(lowerBound, upperBound, processors, processorA, tasks, taskA, taskA, 0, 0);
   // printf("%d is the answer", temp);
   return temp;
@@ -293,40 +292,35 @@ int backtrack(int lower, int upper, int processors, int processorA[], int tasks,
       // printf("We add %d to index %d, which gives the array below\n", taskA[0], j);
                  // Assign next task in workload[] to the current processor[index]
                  // Set this new processor[index] as the current_processor_time
-      processorA[j] += taskA[0];
       // printArray(processorA, processors);
       //            If the current_processor_time == previous_processor_time, break
-      if (j > 0 && (processorA[j] == processorA[j - 1] + taskA[0])){
-        processorA[j] -= taskA[0];
-        continue;
-      }
-      else if (upper == lower){
+      if (upper == lower){
         return lower;
       }
-      else if (processorA[j] > upper){
-        processorA[j] -= taskA[0];
+
+      if (j > 0 && (processorA[j] == processorA[j - 1])){
         continue;
       }
-      else if ((j > 0 && processorA[j] - taskA[0]) && checkSame(processorA, j, processorA[j] - taskA[0])){
-        processorA[j] -= taskA[0];
+      else if (processorA[j] + taskA[0] > upper){
         continue;
       }
-            //            Else
-      //                backtrack(int lower, int upper, int new_processor[], int new_workload[])
+      else if ((j > 0 && processorA[j]) && checkSame(processorA, j, processorA[j])){
+        continue;
+      }
       else if ((j > 0) && (taskHistory[tasksTotal - 1] == taskA[0]) && j < prevProcessor){
         // printArray(taskHistory, tasksTotal);
-        processorA[j] -= taskA[0];
         // printf("We are on task %d, and %d is the same as %d\n", tasksTotal, taskHistory[tasksTotal - 1], taskA[0]);
         // printf("We are on index %d and are skipping until index %d\n", j, prevProcessor);
+        // prevProcessor = j;
         continue;
       }
       else {
+        processorA[j] += taskA[0];
         backtrackLower = backtrack(lower, upper, processors, processorA, tasks - 1, tempTaskA, taskHistory, tasksTotal + 1, j);
         if (backtrackLower < upper)
           upper = backtrackLower;
+        processorA[j] -= taskA[0];
       }
-      // Deassign task from the current processor[index]
-      processorA[j] -= taskA[0];
     }
   }
   return upper;
