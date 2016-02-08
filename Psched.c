@@ -16,6 +16,7 @@ int arraySum(int A[], int size);
 int opt(int processors, int tasks, int taskA[]);
 int backtrack(int lower, int upper, int processors, int processorA[], int tasks, int taskA[]);
 void pushArray(int A[], int size);
+int checkSameProcessor(int A[], int index, int value);
 
 int main(int argc, char *argv[]){
   // Process the arguments
@@ -55,8 +56,8 @@ int main(int argc, char *argv[]){
       else if (strcmp(argv[i], "0")){
         if (!strcmp(argv[i], "-opt")){
           flagged = 1;
-          printf("Backtracking\n");
-          opt(processors, tasks, taskA);
+          temporaryMax = opt(processors, tasks, taskA);
+          printf("-opt %d\n", temporaryMax);
         }
         else if (!strcmp(argv[i], "-lw")){
           flagged = 1;
@@ -245,12 +246,12 @@ int bw(int processors, int tasks, int taskA[]) {
 // Backtracking function
 int opt(int processors, int tasks, int taskA[]){
   // Sort workload by decreasing order in order to compute the intial upper bound using -lwd
-  int i, j, upperBound, lowerBound, sum, temp;
+  int i, upperBound, lowerBound, sum, temp;
   int processorA[processors];
 
 
-  for (j = 0; j < processors; j++)
-    processorA[j] = 0;
+  for (i = 0; i < processors; i++)
+    processorA[i] = 0;
 
   mergeSort(taskA, 0, tasks - 1);
   reverseArray(taskA, tasks);
@@ -262,7 +263,7 @@ int opt(int processors, int tasks, int taskA[]){
   lowerBound = sum/processors + (sum % processors != 0);
   //    Return the resulting minimum workload
   temp = backtrack(lowerBound, upperBound, processors, processorA, tasks, taskA);
-  printf("%d is the answer", temp);
+  // printf("%d is the answer", temp);
   return temp;
 }
 
@@ -271,10 +272,13 @@ int backtrack(int lower, int upper, int processors, int processorA[], int tasks,
 //        Return the max workload for this assignment or upper, whatever is smaller
   int largest, i, j, backtrackLower;
   int tempTaskA[tasks];
+  largest = largestElement(processorA, processors);
   if (tasks == 0){
-    largest = largestElement(processorA, processors);
-    printf("There are no more tasks to assign: we return the smallest of %d and %d\n", upper, largest);
+    // printf("There are no more tasks to assign: we return the smallest of %d and %d\n", upper, largest);
     return (largest < upper) ? largest : upper;
+  }
+  else if (tasks == 0 && largest == lower){
+    return lower;
   }
   else {
     // Create a task array with first element pushed off
@@ -283,30 +287,34 @@ int backtrack(int lower, int upper, int processors, int processorA[], int tasks,
     pushArray(tempTaskA, tasks);
 
     for (j = 0; j < processors; j++){
-      printf("There are %d tasks left\n", tasks);
-      printf("This is what the processors look like before we add %d\n", taskA[0]);
-      printArray(processorA, processors);
-      printf("We add %d to index %d, which gives the array below\n", taskA[0], j);
-      //            Assign next task in workload[] to the current processor[index]
-      //            Set this new processor[index] as the current_processor_time
+      // printf("There are %d tasks left\n", tasks);
+      // printf("This is what the processors look like before we add %d\n", taskA[0]);
+      // printArray(processorA, processors);
+      // printf("We add %d to index %d, which gives the array below\n", taskA[0], j);
+                 // Assign next task in workload[] to the current processor[index]
+                 // Set this new processor[index] as the current_processor_time
       processorA[j] += taskA[0];
-      printArray(processorA, processors);
+      // printArray(processorA, processors);
       //            If the current_processor_time == previous_processor_time, break
       if (j > 0 && (processorA[j] == processorA[j - 1] + taskA[0])){
-        printf("continue\n");
         processorA[j] -= taskA[0];
         continue;
       }
-      else if (processorA[j] > upper){
-        printf("skip\n");
-        processorA[j] -= taskA[0];
-        continue;
-      }
-      else if (processorA[j] == lower){
-        printf("Found the lowest\n");
+      else if (upper == lower){
+        // printf("%d\n", lower);
         return lower;
       }
-      //            Else
+      else if (processorA[j] > upper){
+        // printf("skip\n");
+        processorA[j] -= taskA[0];
+        continue;
+      }
+      else if ((j > 0 && processorA[j] - taskA[0]) && checkSameProcessor(processorA, j, processorA[j] - taskA[0])){
+        // printf("Same Processor");
+        processorA[j] -= taskA[0];
+        continue;
+      }
+            //            Else
       //                backtrack(int lower, int upper, int new_processor[], int new_workload[])
       else {
         backtrackLower = backtrack(lower, upper, processors, processorA, tasks - 1, tempTaskA);
@@ -381,4 +389,15 @@ void pushArray(int A[], int size){
     B[i] = A[i];
   for (j = 0; j < size - 1; j++)
     A[j] = B[j + 1];
+}
+
+int checkSameProcessor(int A[], int index, int value){
+  int i;
+  // printf("We are checking to see if %d is the same as any in the following array\n", value);
+  // printArray(A, index);
+  for (i = 0; i < index; i++){
+    if (value == A[index])
+      return 1;
+  }
+  return 0;
 }
