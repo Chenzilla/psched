@@ -302,6 +302,10 @@ int backtrack(int lower, int upper, int processors, int processorA[], int tasks,
         processorA[j] -= taskA[0];
         continue;
       }
+      else if (processorA[j] == lower){
+        printf("Found the lowest\n");
+        return lower;
+      }
       //            Else
       //                backtrack(int lower, int upper, int new_processor[], int new_workload[])
       else {
